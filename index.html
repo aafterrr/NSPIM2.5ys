@@ -1,182 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>Delirium CAM Assessment</title>
+  <meta charset="UTF-8" />
+  <title>Delirium CAM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, select, button { margin: 5px 0; padding: 8px; width: 100%; }
-    .section { margin-bottom: 20px; }
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #007acc;
+    }
+    label, input, select {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005c99;
+    }
+    .section {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      margin-bottom: 1rem;
+    }
+    .result {
+      white-space: pre-wrap;
+      background: #eef;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
+  <h1>Delirium CAM Form</h1>
 
-  <h2>🔍 Search Patient</h2>
   <div class="section">
-    <input type="text" id="hn" placeholder="Enter HN">
-    <button onclick="searchPatient()">Search</button>
+    <label>HN: <input type="text" id="hnInput" /></label>
+    <button onclick="loadPatient()">โหลดข้อมูลผู้ป่วย</button>
+    <div id="patientInfo" class="result"></div>
   </div>
 
-  <div id="patientInfo" class="section" style="display: none;">
-    <h3>🧑‍⚕️ Patient Info</h3>
-    <p><b>Name:</b> <span id="name"></span></p>
-    <p><b>Sex:</b> <span id="sex"></span></p>
-    <p><b>Age:</b> <span id="age"></span></p>
-    <p><b>Dx:</b> <span id="dx"></span></p>
-    <p><b>Admit Date:</b> <span id="admit"></span></p>
-    <p><b>Patient Day:</b> <span id="patientDay"></span></p>
+  <div class="section">
+    <h2>กรอกแบบฟอร์ม CAM</h2>
+    <label>วันที่: <input type="date" id="camDate" /></label>
+    <label>เวร: 
+      <select id="camShift">
+        <option value="เช้า">เช้า</option>
+        <option value="บ่าย">บ่าย</option>
+        <option value="ดึก">ดึก</option>
+      </select>
+    </label>
+    <label>เตียง: <input type="text" id="camBed" /></label>
+    <label>RASS: <input type="number" id="camRASS" /></label>
+    <label>CAM1: <select id="cam1"><option value="1">1</option><option value="0">0</option></select></label>
+    <label>CAM2: <select id="cam2"><option value="1">1</option><option value="0">0</option></select></label>
+    <label>CAM3: <select id="cam3"><option value="1">1</option><option value="0">0</option></select></label>
+    <label>CAM4: <select id="cam4"><option value="1">1</option><option value="0">0</option></select></label>
+    <label>ผลลัพธ์: <select id="camResult"><option value="Delirium">Delirium</option><option value="No Delirium">No Delirium</option></select></label>
+    <button onclick="submitCAM()">ส่งข้อมูล CAM</button>
   </div>
 
-  <div id="camSection" class="section" style="display: none;">
-    <h3>📝 Record CAM</h3>
-    <input type="text" id="bed" placeholder="Bed">
-    <select id="shift">
-      <option value="Morning">Morning</option>
-      <option value="Evening">Evening</option>
-      <option value="Night">Night</option>
-    </select>
-    <select id="rass">
-      <option value="-5">-5</option>
-      <option value="-4">-4</option>
-      <option value="-3">-3</option>
-      <option value="-2">-2</option>
-      <option value="-1">-1</option>
-      <option value="0" selected>0</option>
-      <option value="1">+1</option>
-      <option value="2">+2</option>
-      <option value="3">+3</option>
-      <option value="4">+4</option>
-    </select>
-    <select id="cam1"><option value="0">Inattentive</option><option value="1" selected>Attentive</option></select>
-    <select id="cam2"><option value="0">Disorganized</option><option value="1" selected>Organized</option></select>
-    <select id="cam3"><option value="0">Altered</option><option value="1" selected>No Alteration</option></select>
-    <select id="cam4"><option value="0">Fluctuating</option><option value="1" selected>No Fluctuation</option></select>
-    <button onclick="submitCAM()">Submit CAM</button>
-  </div>
-
-  <div id="historySection" class="section" style="display: none;">
-    <h3>📜 CAM History</h3>
-    <table border="1" width="100%" id="camTable">
-      <thead>
-        <tr>
-          <th>Date</th><th>Shift</th><th>Bed</th><th>RASS</th>
-          <th>CAM1</th><th>CAM2</th><th>CAM3</th><th>CAM4</th><th>Result</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="section">
+    <h2>ประวัติ CAM</h2>
+    <button onclick="loadCAM()">โหลดประวัติ</button>
+    <div id="camHistory" class="result"></div>
   </div>
 
   <script>
-    // แก้ URL ตรงนี้ให้ใช้ Web App ที่เปิด Anyone แล้วเท่านั้น
-    const SCRIPT = 'https://script.google.com/macros/s/AKfycbzpet80kK6CghYA-w3jF2iaIceWV5blQHFO6UYKEl9aaxCOdH4nJf44ZZL00Pryd1XCPw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz-oRikRo2ZgciqTPHZZZQ5-b8boM1eWrkQYxnL9yBg2nxEj8p7Vm-Zu_dppF8JtL5K/exec';
 
-    let currentHN = '';
+    function loadPatient() {
+      const hn = document.getElementById('hnInput').value;
+      if (!hn) return alert("กรุณากรอก HN");
 
-    function searchPatient() {
-      const hn = document.getElementById('hn').value.trim();
-      if (!hn) return alert('Please enter HN');
-      currentHN = hn;
-
-      fetch(`${SCRIPT}?action=getPatient&hn=${hn}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Request failed');
-          return res.json();
-        })
+      fetch(`${API_URL}?action=getPatient&hn=${hn}`)
+        .then(res => res.json())
         .then(data => {
-          if (!data || !data.HN) return alert('Patient not found');
-
-          document.getElementById('name').textContent = data.Name;
-          document.getElementById('sex').textContent = data.Sex;
-          document.getElementById('age').textContent = data.Age;
-          document.getElementById('dx').textContent = data.Dx;
-          document.getElementById('admit').textContent = data.Admit;
-          document.getElementById('patientDay').textContent = data.PatientDay;
-
-          document.getElementById('patientInfo').style.display = 'block';
-          document.getElementById('camSection').style.display = 'block';
-          document.getElementById('historySection').style.display = 'block';
-
-          loadCAMHistory(hn);
+          if (!data || !data.HN) {
+            document.getElementById('patientInfo').innerText = 'ไม่พบข้อมูลผู้ป่วย';
+          } else {
+            document.getElementById('patientInfo').innerText = `
+HN: ${data.HN}
+ชื่อ: ${data.Name}
+อายุ: ${data.Age}
+เพศ: ${data.Sex}
+วินิจฉัย: ${data.Dx}
+วัน Admit: ${data.Admit}
+Risk: ${data.Risk}
+Sedative: ${data.Sedative}
+Patient Day: ${data.PatientDay}
+            `.trim();
+          }
         })
-        .catch(err => {
-          console.error('Error:', err);
-          alert('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ป่วย');
-        });
+        .catch(err => alert("เกิดข้อผิดพลาด: " + err));
     }
 
     function submitCAM() {
-      const bed = document.getElementById('bed').value;
-      const shift = document.getElementById('shift').value;
-      const rass = document.getElementById('rass').value;
-      const cam1 = document.getElementById('cam1').value;
-      const cam2 = document.getElementById('cam2').value;
-      const cam3 = document.getElementById('cam3').value;
-      const cam4 = document.getElementById('cam4').value;
-
-      const today = new Date().toISOString().slice(0, 10);
-      const result = (rass < -3) ? 'Unable to assess' :
-        (cam1 == 0 && cam2 == 0 && (cam3 == 0 || cam4 == 0)) ? 'Delirium' : 'Negative';
+      const hn = document.getElementById('hnInput').value;
+      if (!hn) return alert("กรุณากรอก HN");
 
       const payload = {
         type: 'cam',
-        HN: currentHN,
-        Date: today,
-        Shift: shift,
-        Bed: bed,
-        RASS: rass,
-        CAM1: cam1,
-        CAM2: cam2,
-        CAM3: cam3,
-        CAM4: cam4,
-        Result: result
+        HN: hn,
+        Date: document.getElementById('camDate').value,
+        Shift: document.getElementById('camShift').value,
+        Bed: document.getElementById('camBed').value,
+        RASS: document.getElementById('camRASS').value,
+        CAM1: document.getElementById('cam1').value,
+        CAM2: document.getElementById('cam2').value,
+        CAM3: document.getElementById('cam3').value,
+        CAM4: document.getElementById('cam4').value,
+        Result: document.getElementById('camResult').value
       };
 
-      fetch(SCRIPT, {
+      fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-        .then(res => {
-          if (!res.ok) throw new Error('Submit failed');
-          alert('CAM Submitted!');
-          loadCAMHistory(currentHN);
+        .then(res => res.text())
+        .then(msg => {
+          alert("ส่งข้อมูลเรียบร้อยแล้ว");
         })
-        .catch(err => {
-          console.error('Submit error:', err);
-          alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-        });
+        .catch(err => alert("ส่งข้อมูลไม่สำเร็จ: " + err));
     }
 
-    function loadCAMHistory(hn) {
-      fetch(`${SCRIPT}?action=getCAM&hn=${hn}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Fetch CAM history failed');
-          return res.json();
-        })
+    function loadCAM() {
+      const hn = document.getElementById('hnInput').value;
+      if (!hn) return alert("กรุณากรอก HN");
+
+      fetch(`${API_URL}?action=getCAM&hn=${hn}`)
+        .then(res => res.json())
         .then(data => {
-          const tbody = document.getElementById('camTable').querySelector('tbody');
-          tbody.innerHTML = '';
-          data.reverse().forEach(entry => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${entry.Date}</td>
-              <td>${entry.Shift}</td>
-              <td>${entry.Bed}</td>
-              <td>${entry.RASS}</td>
-              <td>${entry.CAM1}</td>
-              <td>${entry.CAM2}</td>
-              <td>${entry.CAM3}</td>
-              <td>${entry.CAM4}</td>
-              <td><b>${entry.Result}</b></td>
-            `;
-            tbody.appendChild(tr);
-          });
+          if (!data.length) {
+            document.getElementById('camHistory').innerText = 'ไม่มีประวัติ';
+            return;
+          }
+          const lines = data.map(d => 
+            `วันที่: ${d.Date} | เวร: ${d.Shift} | เตียง: ${d.Bed} | RASS: ${d.RASS} | ผล: ${d.Result}`
+          );
+          document.getElementById('camHistory').innerText = lines.join('\n');
         })
-        .catch(err => {
-          console.error('Load CAM history error:', err);
-          alert('เกิดข้อผิดพลาดในการโหลดประวัติ CAM');
-        });
+        .catch(err => alert("โหลดประวัติไม่สำเร็จ: " + err));
     }
   </script>
 </body>
