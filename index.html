@@ -68,6 +68,7 @@
   </div>
 
   <script>
+    // แก้ URL ตรงนี้ให้ใช้ Web App ที่เปิด Anyone แล้วเท่านั้น
     const SCRIPT = 'https://script.google.com/macros/s/AKfycbzpet80kK6CghYA-w3jF2iaIceWV5blQHFO6UYKEl9aaxCOdH4nJf44ZZL00Pryd1XCPw/exec';
 
     let currentHN = '';
@@ -78,12 +79,12 @@
       currentHN = hn;
 
       fetch(`${SCRIPT}?action=getPatient&hn=${hn}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Request failed');
+          return res.json();
+        })
         .then(data => {
-          if (!data || !data.HN) {
-            alert('Patient not found');
-            return;
-          }
+          if (!data || !data.HN) return alert('Patient not found');
 
           document.getElementById('name').textContent = data.Name;
           document.getElementById('sex').textContent = data.Sex;
@@ -97,6 +98,10 @@
           document.getElementById('historySection').style.display = 'block';
 
           loadCAMHistory(hn);
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ป่วย');
         });
     }
 
@@ -109,9 +114,9 @@
       const cam3 = document.getElementById('cam3').value;
       const cam4 = document.getElementById('cam4').value;
 
-      const today = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+      const today = new Date().toISOString().slice(0, 10);
       const result = (rass < -3) ? 'Unable to assess' :
-                     (cam1 == 0 && cam2 == 0 && (cam3 == 0 || cam4 == 0)) ? 'Delirium' : 'Negative';
+        (cam1 == 0 && cam2 == 0 && (cam3 == 0 || cam4 == 0)) ? 'Delirium' : 'Negative';
 
       const payload = {
         type: 'cam',
@@ -129,18 +134,26 @@
 
       fetch(SCRIPT, {
         method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       })
-      .then(() => {
-        alert('CAM Submitted!');
-        loadCAMHistory(currentHN);
-      });
+        .then(res => {
+          if (!res.ok) throw new Error('Submit failed');
+          alert('CAM Submitted!');
+          loadCAMHistory(currentHN);
+        })
+        .catch(err => {
+          console.error('Submit error:', err);
+          alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+        });
     }
 
     function loadCAMHistory(hn) {
       fetch(`${SCRIPT}?action=getCAM&hn=${hn}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Fetch CAM history failed');
+          return res.json();
+        })
         .then(data => {
           const tbody = document.getElementById('camTable').querySelector('tbody');
           tbody.innerHTML = '';
@@ -159,9 +172,12 @@
             `;
             tbody.appendChild(tr);
           });
+        })
+        .catch(err => {
+          console.error('Load CAM history error:', err);
+          alert('เกิดข้อผิดพลาดในการโหลดประวัติ CAM');
         });
     }
   </script>
-
 </body>
 </html>
