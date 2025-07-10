@@ -1,242 +1,167 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>CAM‑ICU System</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<style>
- body{background:#f4f7fb;padding:1.2rem;}
- .card{box-shadow:0 .25rem .75rem rgba(0,0,0,.05);}
- .pos{color:#dc3545;font-weight:600;} .neg{color:#198754;font-weight:600;}
- .cam-entry{border:1px solid #ddd;border-radius:6px;padding:6px;margin:6px 0;}
-</style>
+  <meta charset="UTF-8">
+  <title>Delirium CAM Assessment</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, select, button { margin: 5px 0; padding: 8px; width: 100%; }
+    .section { margin-bottom: 20px; }
+  </style>
 </head>
 <body>
-<div class="container">
 
-  <h4 class="mb-2"><i class="bi bi-search"></i> ค้นหาผู้ป่วย</h4>
-  <div class="input-group mb-4">
-    <input id="searchHN" type="number" class="form-control" placeholder="ใส่ HN">
-    <button class="btn btn-primary" onclick="lookup()"><i class="bi bi-search"></i> ค้นหา</button>
+  <h2>🔍 Search Patient</h2>
+  <div class="section">
+    <input type="text" id="hn" placeholder="Enter HN">
+    <button onclick="searchPatient()">Search</button>
   </div>
 
-  <!-- PATIENT -->
-  <div id="cardPatient" class="card mb-4 d-none">
-    <div class="card-header bg-primary text-white"><strong><i class="bi bi-person-vcard"></i> ข้อมูลผู้ป่วย</strong></div>
-    <div class="card-body">
-      <form class="row g-3" onsubmit="savePatient(event)">
-        <div class="col-md-3"><label class="form-label">HN</label><input id="p_hn" class="form-control" readonly></div>
-        <div class="col-md-2"><label class="form-label">Sex</label><select id="p_sex" class="form-select"><option>ชาย</option><option>หญิง</option></select></div>
-        <div class="col-md-2"><label class="form-label">Age</label><input id="p_age" type="number" class="form-control"></div>
-        <div class="col-md-5"><label class="form-label">Name‑surname</label><input id="p_name" class="form-control"></div>
-        <div class="col-md-3"><label class="form-label">Admit date</label><input id="p_admit" type="date" class="form-control"></div>
-        <div class="col-md-3"><label class="form-label">Patient Day <span id="p_day" class="badge bg-info ms-1"></span></label><input class="form-control" disabled></div>
-        <div class="col-md-6"><label class="form-label">Dx.</label><input id="p_dx" class="form-control"></div>
-        <div class="col-12">
-  <label class="form-label d-block mb-1">Risk factor (เลือกได้หลายข้อ)</label>
-  <div id="boxRisk" class="d-flex flex-wrap gap-2">
-
-    <input type="checkbox" class="btn-check" id="risk1"  value="อายุ > 65 ปี" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk1">อายุ > 65</label>
-
-    <input type="checkbox" class="btn-check" id="risk2" value="มีประวัติเพ้อหรือการรับรู้ผิดปกติอยู่ก่อน" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk2">เพ้อก่อน ICU</label>
-
-    <input type="checkbox" class="btn-check" id="risk3" value="มีประวัติใช้แอลกอฮอล์" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk3">แอลกอฮอล์</label>
-
-    <input type="checkbox" class="btn-check" id="risk4" value="ได้รับยา sedatives (เช่น benzodiazepines)" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk4">sedatives</label>
-
-    <input type="checkbox" class="btn-check" id="risk5" value="ไม่สามารถเคลื่อนไหวได้" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk5">ไม่เคลื่อนไหว</label>
-
-    <input type="checkbox" class="btn-check" id="risk6" value="ถูกรบกวนการนอนหลับ" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk6">นอนถูกรบกวน</label>
-
-    <input type="checkbox" class="btn-check" id="risk7" value="ขาดการกระตุ้นประสาทรับความรู้สึก" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk7">ขาดสิ่งกระตุ้น</label>
-
-    <input type="checkbox" class="btn-check" id="risk8" value="On TT/OT c BV" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk8">TT/OT c BV</label>
-
-    <input type="checkbox" class="btn-check" id="risk9" value="On NIV" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk9">NIV</label>
-
-    <input type="checkbox" class="btn-check" id="risk10" value="On HFNC" autocomplete="off">
-    <label class="btn btn-outline-primary" for="risk10">HFNC</label>
-
-  </div>
-</div>
-
-        <div class="col-12"><label class="form-label">ชนิด sedative</label><input id="p_sed" class="form-control"></div>
-        <div class="col-12"><button class="btn btn-success"><i class="bi bi-save"></i> บันทึก/อัปเดต</button></div>
-      </form>
-    </div>
+  <div id="patientInfo" class="section" style="display: none;">
+    <h3>🧑‍⚕️ Patient Info</h3>
+    <p><b>Name:</b> <span id="name"></span></p>
+    <p><b>Sex:</b> <span id="sex"></span></p>
+    <p><b>Age:</b> <span id="age"></span></p>
+    <p><b>Dx:</b> <span id="dx"></span></p>
+    <p><b>Admit Date:</b> <span id="admit"></span></p>
+    <p><b>Patient Day:</b> <span id="patientDay"></span></p>
   </div>
 
-  <!-- CAM -->
-  <div id="cardCam" class="card mb-4 d-none">
-    <div class="card-header bg-secondary text-white"><strong><i class="bi bi-clipboard-plus"></i> บันทึก CAM‑ICU</strong></div>
-    <div class="card-body">
-      <form class="row g-3" onsubmit="saveCAM(event)">
-        <div class="col-6 col-md-3"><label class="form-label">Date</label><input id="c_date" type="date" class="form-control"></div>
-        <div class="col-6 col-md-3"><label class="form-label">Shift</label><select id="c_shift" class="form-select"><option>Day</option><option>Evening</option><option>Night</option></select></div>
-        <div class="col-6 col-md-3"><label class="form-label">Bed</label><input id="c_bed" type="number" class="form-control"></div>
-        <div class="col-6 col-md-3"><label class="form-label">RASS today</label><select id="c_rass" class="form-select">
-          <option>'+4 ต่อสู้</option><option>'+3 กระวนกระวายมาก (ดึงเครื่องมือ)</option>
-          <option>'+2 กระวนกระวาย (ต้านเครื่อง)</option><option>'+1 พักไม่ได้</option>
-          <option>0 ตื่นตัวและสงบ</option><option>'-1 ง่วงซึม</option>
-          <option>'-2 หลับตื้น</option><option>'-3 หลับปานกลาง</option>
-          <option>'-4 หลับลึก</option><option>'-5 ปลุกไม่ตื่น</option>
-        </select></div>
-        <div class="col-md-3"><label class="form-label">CAM1</label><select id="cam1" class="form-select"><option>No</option><option>Yes</option></select></div>
-        <div class="col-md-3"><label class="form-label">CAM2</label><select id="cam2" class="form-select"><option>No</option><option>Yes</option></select></div>
-        <div class="col-md-3"><label class="form-label">CAM3</label><select id="cam3" class="form-select"><option>RASS not 0</option><option>RASS=0</option></select></div>
-        <div class="col-md-3"><label class="form-label">CAM4</label><select id="cam4" class="form-select"><option>No</option><option>Yes</option></select></div>
-        <div class="col-12"><label class="form-label">Result</label><input id="c_result" class="form-control" readonly></div>
-        <div class="col-12"><button class="btn btn-primary"><i class="bi bi-cloud-arrow-up"></i> บันทึก CAM</button></div>
-      </form>
-    </div>
+  <div id="camSection" class="section" style="display: none;">
+    <h3>📝 Record CAM</h3>
+    <input type="text" id="bed" placeholder="Bed">
+    <select id="shift">
+      <option value="Morning">Morning</option>
+      <option value="Evening">Evening</option>
+      <option value="Night">Night</option>
+    </select>
+    <select id="rass">
+      <option value="-5">-5</option>
+      <option value="-4">-4</option>
+      <option value="-3">-3</option>
+      <option value="-2">-2</option>
+      <option value="-1">-1</option>
+      <option value="0" selected>0</option>
+      <option value="1">+1</option>
+      <option value="2">+2</option>
+      <option value="3">+3</option>
+      <option value="4">+4</option>
+    </select>
+    <select id="cam1"><option value="0">Inattentive</option><option value="1" selected>Attentive</option></select>
+    <select id="cam2"><option value="0">Disorganized</option><option value="1" selected>Organized</option></select>
+    <select id="cam3"><option value="0">Altered</option><option value="1" selected>No Alteration</option></select>
+    <select id="cam4"><option value="0">Fluctuating</option><option value="1" selected>No Fluctuation</option></select>
+    <button onclick="submitCAM()">Submit CAM</button>
   </div>
 
-  <!-- HISTORY -->
-  <div id="cardHist" class="card d-none">
-    <div class="card-header bg-light"><strong><i class="bi bi-clock-history"></i> ประวัติ CAM‑ICU</strong></div>
-    <div class="card-body" id="histBody"></div>
+  <div id="historySection" class="section" style="display: none;">
+    <h3>📜 CAM History</h3>
+    <table border="1" width="100%" id="camTable">
+      <thead>
+        <tr>
+          <th>Date</th><th>Shift</th><th>Bed</th><th>RASS</th>
+          <th>CAM1</th><th>CAM2</th><th>CAM3</th><th>CAM4</th><th>Result</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-</div>
+  <script>
+    const SCRIPT = 'https://script.google.com/macros/s/AKfycbzpet80kK6CghYA-w3jF2iaIceWV5blQHFO6UYKEl9aaxCOdH4nJf44ZZL00Pryd1XCPw/exec';
 
-<!-- JS -->
-<script>
-const SCRIPT = 'https://script.google.com/macros/s/AKfycbwgMjxkJgxWfu4HRMhQNgKbAsF4ziyv5DHyA2lUw_652jXTs83PZkI_FCSL9hGwb6BkiQ/exec';
-let HN='';
+    let currentHN = '';
 
-/* ---------- SEARCH ---------- */
-async function lookup(){
-  const hn=id('searchHN').value.trim();
-  if(!hn){alert('กรุณากรอก HN');return;}
-  HN=hn;
-  const p=await json(`?action=getPatient&hn=${hn}`);
-  if(p){fillPatient(p);show(id('cardCam'));loadHist();}
-  else {prepNewPatient(hn);}
-}
+    function searchPatient() {
+      const hn = document.getElementById('hn').value.trim();
+      if (!hn) return alert('Please enter HN');
+      currentHN = hn;
 
-/* ---------- PATIENT ---------- */
-function fillPatient(d){
-  show(id('cardPatient'));
-  show(id('cardCam'));
-  set('p_hn', d.HN);
-  set('p_sex', d.Sex);
-  set('p_age', d.Age);
-  set('p_name', d.Name);
-  set('p_admit', d.Admit.split('T')[0]);
-  set('p_dx', d.Dx);
-  set('p_sed', d.Sedative);
-  id('p_day').innerText = d.PatientDay;
+      fetch(`${SCRIPT}?action=getPatient&hn=${hn}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || !data.HN) {
+            alert('Patient not found');
+            return;
+          }
 
-  // ✅ ติ๊ก checkbox ตาม risk
-  const risks = (d.Risk || '').split(', ');
-  document.querySelectorAll('#boxRisk input[type="checkbox"]').forEach(cb => {
-    cb.checked = risks.includes(cb.value);
-  });
-}
+          document.getElementById('name').textContent = data.Name;
+          document.getElementById('sex').textContent = data.Sex;
+          document.getElementById('age').textContent = data.Age;
+          document.getElementById('dx').textContent = data.Dx;
+          document.getElementById('admit').textContent = data.Admit;
+          document.getElementById('patientDay').textContent = data.PatientDay;
 
-function prepNewPatient(hn){
-  HN = hn;
-  show(id('cardPatient'));
-  hide(id('cardCam'));
-  hide(id('cardHist'));
-  set('p_hn', hn);
-  set('p_admit', today());
-  ['p_name','p_age','p_dx','p_sed'].forEach(k => set(k, ''));
-  id('p_day').innerText = '';
-  
-  // ✅ เคลียร์ checkbox
-  document.querySelectorAll('#boxRisk input[type="checkbox"]').forEach(cb => cb.checked = false);
-}
+          document.getElementById('patientInfo').style.display = 'block';
+          document.getElementById('camSection').style.display = 'block';
+          document.getElementById('historySection').style.display = 'block';
 
-async function savePatient(e){
-  e.preventDefault();
+          loadCAMHistory(hn);
+        });
+    }
 
-  // ✅ เก็บค่าจาก checkbox
-  const risk = [...document.querySelectorAll('#boxRisk input[type="checkbox"]:checked')]
-    .map(cb => cb.value)
-    .join(', ');
+    function submitCAM() {
+      const bed = document.getElementById('bed').value;
+      const shift = document.getElementById('shift').value;
+      const rass = document.getElementById('rass').value;
+      const cam1 = document.getElementById('cam1').value;
+      const cam2 = document.getElementById('cam2').value;
+      const cam3 = document.getElementById('cam3').value;
+      const cam4 = document.getElementById('cam4').value;
 
-  await post({
-    type: 'patient',
-    HN,
-    Sex: val('p_sex'),
-    Name: val('p_name'),
-    Age: val('p_age'),
-    Admit: val('p_admit'),
-    Dx: val('p_dx'),
-    Risk: risk,
-    Sedative: val('p_sed')
-  });
+      const today = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+      const result = (rass < -3) ? 'Unable to assess' :
+                     (cam1 == 0 && cam2 == 0 && (cam3 == 0 || cam4 == 0)) ? 'Delirium' : 'Negative';
 
-  alert('บันทึกผู้ป่วยแล้ว');
-  show(id('cardCam'));
-}
+      const payload = {
+        type: 'cam',
+        HN: currentHN,
+        Date: today,
+        Shift: shift,
+        Bed: bed,
+        RASS: rass,
+        CAM1: cam1,
+        CAM2: cam2,
+        CAM3: cam3,
+        CAM4: cam4,
+        Result: result
+      };
 
-/* ---------- PATIENT DAY realtime ---------- */
-id('p_admit').addEventListener('change',()=>{
-  const ad=new Date(val('p_admit'));
-  const diff=Math.floor((new Date().setHours(0,0,0,0)-ad)/86400000);
-  id('p_day').innerText=isNaN(diff)?'':diff;
-});
+      fetch(SCRIPT, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(() => {
+        alert('CAM Submitted!');
+        loadCAMHistory(currentHN);
+      });
+    }
 
-/* ---------- CAM ---------- */
-['cam1','cam2','cam3','cam4'].forEach(x=>id(x).addEventListener('change',()=>{
-  cascade(); id('c_result').value=result();
-}));
-function cascade(){
-  id('cam2').disabled = val('cam1')==='No';
-  id('cam3').disabled = val('cam1')==='No'||val('cam2')==='No';
-  id('cam4').disabled = val('cam1')==='No'||val('cam2')==='No'||val('cam3')!=='RASS=0';
-}
-function result(){
-  const c1=val('cam1'),c2=val('cam2'),c3=val('cam3'),c4=val('cam4');
-  if(c1==='No'||c2==='No')return'CAM-ICU Negative';
-  if(c3==='RASS not 0')return'CAM-ICU Positive';
-  return c4==='Yes'?'CAM-ICU Positive':'CAM-ICU Negative';
-}
-async function saveCAM(e){
-  e.preventDefault();
-  await post({type:'cam',HN,Date:val('c_date'),Shift:val('c_shift'),
-              Bed:val('c_bed'),RASS:val('c_rass'),
-              CAM1:val('cam1')==='No'?'':val('cam1'),
-              CAM2:id('cam2').disabled?'':val('cam2'),
-              CAM3:id('cam3').disabled?'':val('cam3'),
-              CAM4:id('cam4').disabled?'':val('cam4'),
-              Result:result()});
-  alert('บันทึก CAM แล้ว'); loadHist();
-}
+    function loadCAMHistory(hn) {
+      fetch(`${SCRIPT}?action=getCAM&hn=${hn}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById('camTable').querySelector('tbody');
+          tbody.innerHTML = '';
+          data.reverse().forEach(entry => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${entry.Date}</td>
+              <td>${entry.Shift}</td>
+              <td>${entry.Bed}</td>
+              <td>${entry.RASS}</td>
+              <td>${entry.CAM1}</td>
+              <td>${entry.CAM2}</td>
+              <td>${entry.CAM3}</td>
+              <td>${entry.CAM4}</td>
+              <td><b>${entry.Result}</b></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+  </script>
 
-/* ---------- HISTORY ---------- */
-async function loadHist(){
-  const arr=await json(`?action=getCAM&hn=${HN}`);
-  if(!arr.length){hide(id('cardHist'));return;}
-  show(id('cardHist')); const h=id('histBody'); h.innerHTML='';
-  arr.reverse().forEach(r=>{
-    const div=document.createElement('div');div.className='cam-entry';
-    div.innerHTML=`${r.Date} [${r.Shift}] Bed:${r.Bed} → <span class="${r.Result.includes('Pos')?'pos':'neg'}">${r.Result}</span>`;
-    h.appendChild(div);
-  });
-}
-
-/* ---------- HELP ---------- */
-function id(x){return document.getElementById(x);}
-function set(x,v){id(x).value=v;}
-function val(x){return id(x).value;}
-function show(el){el.classList.remove('d-none');}
-function hide(el){el.classList.add('d-none');}
-function today(){return new Date().toISOString().slice(0,10);}
-async function json(q){return(await fetch(SCRIPT+q)).json();}
-async function post(o){await fetch(SCRIPT,{method:'POST',body:JSON.stringify(o)});}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body></html>
+</body>
+</html>
